@@ -15,25 +15,35 @@ int main() {
     int tabuleiro[TAMANHO_TABULEIRO][TAMANHO_TABULEIRO];
 
     /*
-        Vetores unidimensionais que representam os navios.
+        Vetor usado para representar um navio.
 
-        Cada posição do vetor representa uma parte do navio.
-        Como o tamanho do navio é 3, cada vetor possui 3 posições.
+        Todos os navios terão tamanho 3.
+        Cada posição do vetor guarda o valor 3, que será copiado para o tabuleiro.
     */
-    int navioHorizontal[TAMANHO_NAVIO] = {NAVIO, NAVIO, NAVIO};
-    int navioVertical[TAMANHO_NAVIO] = {NAVIO, NAVIO, NAVIO};
+    int navio[TAMANHO_NAVIO] = {NAVIO, NAVIO, NAVIO};
 
     /*
-        Coordenadas iniciais dos navios.
+        Coordenadas iniciais dos quatro navios.
 
-        Linha e coluna começam em 0.
-        Portanto, em um tabuleiro 10x10, os índices válidos vão de 0 até 9.
+        Os índices começam em 0.
+        Em um tabuleiro 10x10, os índices válidos vão de 0 até 9.
     */
-    int linhaNavioHorizontal = 2;
-    int colunaNavioHorizontal = 3;
 
-    int linhaNavioVertical = 5;
-    int colunaNavioVertical = 6;
+    // Navio horizontal: anda para a direita.
+    int linhaHorizontal = 2;
+    int colunaHorizontal = 3;
+
+    // Navio vertical: anda para baixo.
+    int linhaVertical = 5;
+    int colunaVertical = 6;
+
+    // Navio diagonal principal: linha aumenta e coluna aumenta.
+    int linhaDiagonalDireita = 0;
+    int colunaDiagonalDireita = 0;
+
+    // Navio diagonal secundária: linha aumenta e coluna diminui.
+    int linhaDiagonalEsquerda = 0;
+    int colunaDiagonalEsquerda = 9;
 
     int posicaoValida = 1;
 
@@ -50,65 +60,148 @@ int main() {
     }
 
     /*
-        Validação do navio horizontal.
+        Validação dos limites do navio horizontal.
 
-        Como ele anda para a direita, precisamos garantir que:
-        coluna inicial + tamanho do navio não ultrapasse o tamanho do tabuleiro.
+        Como ele anda para a direita:
+        - a linha inicial precisa estar entre 0 e 9
+        - a coluna inicial + tamanho do navio não pode passar de 10
     */
-    if (colunaNavioHorizontal + TAMANHO_NAVIO > TAMANHO_TABULEIRO) {
+    if (
+        linhaHorizontal < 0 ||
+        linhaHorizontal >= TAMANHO_TABULEIRO ||
+        colunaHorizontal < 0 ||
+        colunaHorizontal + TAMANHO_NAVIO > TAMANHO_TABULEIRO
+    ) {
         printf("Erro: o navio horizontal ultrapassa os limites do tabuleiro.\n");
         posicaoValida = 0;
     }
 
     /*
-        Validação do navio vertical.
+        Validação dos limites do navio vertical.
 
-        Como ele anda para baixo, precisamos garantir que:
-        linha inicial + tamanho do navio não ultrapasse o tamanho do tabuleiro.
+        Como ele anda para baixo:
+        - a coluna inicial precisa estar entre 0 e 9
+        - a linha inicial + tamanho do navio não pode passar de 10
     */
-    if (linhaNavioVertical + TAMANHO_NAVIO > TAMANHO_TABULEIRO) {
+    if (
+        colunaVertical < 0 ||
+        colunaVertical >= TAMANHO_TABULEIRO ||
+        linhaVertical < 0 ||
+        linhaVertical + TAMANHO_NAVIO > TAMANHO_TABULEIRO
+    ) {
         printf("Erro: o navio vertical ultrapassa os limites do tabuleiro.\n");
         posicaoValida = 0;
     }
 
     /*
-        Se as posições estiverem dentro dos limites,
-        posicionamos primeiro o navio horizontal.
+        Validação do navio diagonal para a direita.
+
+        Como ele desce para a direita:
+        - linha aumenta
+        - coluna aumenta
+
+        Portanto:
+        linha inicial + tamanho <= tamanho do tabuleiro
+        coluna inicial + tamanho <= tamanho do tabuleiro
+    */
+    if (
+        linhaDiagonalDireita < 0 ||
+        colunaDiagonalDireita < 0 ||
+        linhaDiagonalDireita + TAMANHO_NAVIO > TAMANHO_TABULEIRO ||
+        colunaDiagonalDireita + TAMANHO_NAVIO > TAMANHO_TABULEIRO
+    ) {
+        printf("Erro: o navio diagonal para a direita ultrapassa os limites do tabuleiro.\n");
+        posicaoValida = 0;
+    }
+
+    /*
+        Validação do navio diagonal para a esquerda.
+
+        Como ele desce para a esquerda:
+        - linha aumenta
+        - coluna diminui
+
+        Portanto:
+        linha inicial + tamanho <= tamanho do tabuleiro
+        coluna inicial - tamanho + 1 >= 0
+    */
+    if (
+        linhaDiagonalEsquerda < 0 ||
+        linhaDiagonalEsquerda + TAMANHO_NAVIO > TAMANHO_TABULEIRO ||
+        colunaDiagonalEsquerda < 0 ||
+        colunaDiagonalEsquerda >= TAMANHO_TABULEIRO ||
+        colunaDiagonalEsquerda - TAMANHO_NAVIO + 1 < 0
+    ) {
+        printf("Erro: o navio diagonal para a esquerda ultrapassa os limites do tabuleiro.\n");
+        posicaoValida = 0;
+    }
+
+    /*
+        Posicionamento e verificação de sobreposição.
+
+        Antes de colocar cada parte do navio no tabuleiro,
+        verificamos se a posição ainda está com água.
+
+        Se já houver valor 3, significa que outro navio ocupa aquela posição.
     */
     if (posicaoValida) {
+        // Navio horizontal
         for (int i = 0; i < TAMANHO_NAVIO; i++) {
-            tabuleiro[linhaNavioHorizontal][colunaNavioHorizontal + i] = navioHorizontal[i];
-        }
-
-        /*
-            Antes de posicionar o navio vertical, verificamos se ele
-            vai ocupar alguma posição que já possui outro navio.
-
-            Se encontrar valor 3, significa que há sobreposição.
-        */
-        for (int i = 0; i < TAMANHO_NAVIO; i++) {
-            if (tabuleiro[linhaNavioVertical + i][colunaNavioVertical] == NAVIO) {
-                printf("Erro: os navios estão se sobrepondo.\n");
+            if (tabuleiro[linhaHorizontal][colunaHorizontal + i] == NAVIO) {
+                printf("Erro: sobreposição no navio horizontal.\n");
                 posicaoValida = 0;
+                break;
             }
+
+            tabuleiro[linhaHorizontal][colunaHorizontal + i] = navio[i];
+        }
+    }
+
+    if (posicaoValida) {
+        // Navio vertical
+        for (int i = 0; i < TAMANHO_NAVIO; i++) {
+            if (tabuleiro[linhaVertical + i][colunaVertical] == NAVIO) {
+                printf("Erro: sobreposição no navio vertical.\n");
+                posicaoValida = 0;
+                break;
+            }
+
+            tabuleiro[linhaVertical + i][colunaVertical] = navio[i];
+        }
+    }
+
+    if (posicaoValida) {
+        // Navio diagonal descendo para a direita
+        for (int i = 0; i < TAMANHO_NAVIO; i++) {
+            if (tabuleiro[linhaDiagonalDireita + i][colunaDiagonalDireita + i] == NAVIO) {
+                printf("Erro: sobreposição no navio diagonal para a direita.\n");
+                posicaoValida = 0;
+                break;
+            }
+
+            tabuleiro[linhaDiagonalDireita + i][colunaDiagonalDireita + i] = navio[i];
+        }
+    }
+
+    if (posicaoValida) {
+        // Navio diagonal descendo para a esquerda
+        for (int i = 0; i < TAMANHO_NAVIO; i++) {
+            if (tabuleiro[linhaDiagonalEsquerda + i][colunaDiagonalEsquerda - i] == NAVIO) {
+                printf("Erro: sobreposição no navio diagonal para a esquerda.\n");
+                posicaoValida = 0;
+                break;
+            }
+
+            tabuleiro[linhaDiagonalEsquerda + i][colunaDiagonalEsquerda - i] = navio[i];
         }
     }
 
     /*
-        Se não houve erro de limite nem sobreposição,
-        posicionamos o navio vertical.
+        Exibição final do tabuleiro.
+
+        Se todas as posições forem válidas, o programa imprime a matriz 10x10.
     */
     if (posicaoValida) {
-        for (int i = 0; i < TAMANHO_NAVIO; i++) {
-            tabuleiro[linhaNavioVertical + i][colunaNavioVertical] = navioVertical[i];
-        }
-
-        /*
-            Exibe o tabuleiro completo.
-
-            0 representa água.
-            3 representa parte de um navio.
-        */
         printf("Tabuleiro Batalha Naval:\n\n");
 
         for (int linha = 0; linha < TAMANHO_TABULEIRO; linha++) {
